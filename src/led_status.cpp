@@ -1,3 +1,4 @@
+#ifndef ESP8266
 #include "led_status.h"
 
 void LedStatus::begin() {
@@ -38,3 +39,4 @@ void LedStatus::update() {
         FastLED.show();
     }
 }
+#endif // ESP8266

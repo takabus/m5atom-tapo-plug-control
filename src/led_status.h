@@ -1,5 +1,25 @@
 #pragma once
 
+#ifdef ESP8266
+// ESP8266MOD は NeoPixel LED なし — 全メソッドを no-op スタブとして定義
+#include <Arduino.h>
+
+class LedStatus {
+public:
+    void begin() {}
+    void setSolid(uint8_t, uint8_t, uint8_t) {}
+    void setBlink(uint8_t, uint8_t, uint8_t, uint16_t) {}
+    void off() {}
+    void update() {}
+    void wifiConnecting() {}
+    void handshaking() {}
+    void ok() {}
+    void error() {}
+    void refreshing() {}
+};
+
+#else
+// M5Stack Atom Lite (ESP32)
 #include <Arduino.h>
 #include <FastLED.h>
 #include "config.h"
@@ -27,3 +47,5 @@ private:
     bool ledOn_ = false;
     uint32_t lastToggle_ = 0;
 };
+
+#endif

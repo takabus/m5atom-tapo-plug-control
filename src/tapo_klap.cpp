@@ -1,7 +1,13 @@
 #include "tapo_klap.h"
-#include <HTTPClient.h>
-#include <WiFi.h>
-#include <esp_random.h>
+
+#ifdef ESP8266
+  #include <ESP8266WiFi.h>
+  #include <ESP8266HTTPClient.h>
+#else
+  #include <WiFi.h>
+  #include <HTTPClient.h>
+  #include <esp_random.h>
+#endif
 
 TapoKlap::TapoKlap() : connected_(false), lastHttpCode_(0) {
     memset(authHash_, 0, 32);
@@ -29,7 +35,11 @@ bool TapoKlap::handshake(const char* ip, const char* email, const char* password
 
     // Generate 16-byte random local seed
     uint8_t localSeed[16];
+#ifdef ESP8266
+    for (int i = 0; i < 16; i++) localSeed[i] = (uint8_t)(os_random() & 0xFF);
+#else
     esp_fill_random(localSeed, 16);
+#endif
 
     uint8_t remoteSeed[16];
 
@@ -55,7 +65,12 @@ bool TapoKlap::handshake(const char* ip, const char* email, const char* password
 
 bool TapoKlap::handshake1(const uint8_t localSeed[16], uint8_t remoteSeed[16]) {
     HTTPClient http;
+#ifdef ESP8266
+    WiFiClient wifiClient1;
+    http.begin(wifiClient1, baseUrl_ + "/handshake1");
+#else
     http.begin(baseUrl_ + "/handshake1");
+#endif
     http.addHeader("Content-Type", "application/octet-stream");
     http.setTimeout(5000);
 
@@ -81,7 +96,7 @@ bool TapoKlap::handshake1(const uint8_t localSeed[16], uint8_t remoteSeed[16]) {
     }
 
     uint8_t response[48];
-    WiFiClient* stream = http.getStreamPtr();
+    Stream* stream = http.getStreamPtr();
     size_t bytesRead = 0;
     unsigned long deadline = millis() + 3000;
     while (bytesRead < 48 && millis() < deadline) {
@@ -132,7 +147,12 @@ bool TapoKlap::handshake2(const uint8_t localSeed[16], const uint8_t remoteSeed[
     TapoCipher::sha256_multi(parts, lengths, 3, clientHash);
 
     HTTPClient http;
+#ifdef ESP8266
+    WiFiClient wifiClient2;
+    http.begin(wifiClient2, baseUrl_ + "/handshake2");
+#else
     http.begin(baseUrl_ + "/handshake2");
+#endif
     http.addHeader("Content-Type", "application/octet-stream");
     if (cookie_.length() > 0) {
         http.addHeader("Cookie", cookie_);
@@ -163,7 +183,12 @@ bool TapoKlap::send(const String& json, String& response) {
     String url = baseUrl_ + "/request?seq=" + String(cipher_.getSeq());
 
     HTTPClient http;
+#ifdef ESP8266
+    WiFiClient wifiClient3;
+    http.begin(wifiClient3, url);
+#else
     http.begin(url);
+#endif
     http.addHeader("Content-Type", "application/octet-stream");
     if (cookie_.length() > 0) {
         http.addHeader("Cookie", cookie_);
@@ -192,12 +217,13 @@ bool TapoKlap::send(const String& json, String& response) {
         // Decrypt
         std::vector<uint8_t> decrypted = cipher_.decrypt((const uint8_t*)raw.c_str(), raw.length());
         if (decrypted.empty()) return false;
-        response = String((const char*)decrypted.data(), decrypted.size());
+        decrypted.push_back(0);
+        response = String((const char*)decrypted.data());
         return true;
     }
 
     std::vector<uint8_t> respData(respLen);
-    WiFiClient* stream = http.getStreamPtr();
+    Stream* stream = http.getStreamPtr();
     size_t bytesRead = 0;
     unsigned long startTime = millis();
     while (bytesRead < (size_t)respLen && (millis() - startTime < 5000)) {
@@ -214,6 +240,7 @@ bool TapoKlap::send(const String& json, String& response) {
     std::vector<uint8_t> decrypted = cipher_.decrypt(respData.data(), bytesRead);
     if (decrypted.empty()) return false;
 
-    response = String((const char*)decrypted.data(), decrypted.size());
+    decrypted.push_back(0);
+    response = String((const char*)decrypted.data());
     return true;
 }
