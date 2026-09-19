@@ -7,7 +7,7 @@
 // Timing
 #define COUNTDOWN_SECONDS      180    // Auto-off countdown (seconds)
 #define COUNTDOWN_REFRESH_MS   30000  // Refresh interval (ms)
-#define WIFI_CONNECT_TIMEOUT   10000  // WiFi timeout (ms)
+#define WIFI_CONNECT_TIMEOUT   5000  // WiFi timeout (ms)
 #define HANDSHAKE_RETRY_DELAY  3000   // Retry delay (ms)
 #define MAX_RETRIES            5      // Max retry count
 
