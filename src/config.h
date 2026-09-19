@@ -9,8 +9,8 @@
 // Timing
 #define COUNTDOWN_SECONDS      180    // Auto-off countdown (seconds)
 #define COUNTDOWN_REFRESH_MS   30000  // Refresh interval (ms)
-#define WIFI_CONNECT_TIMEOUT   3000  // WiFi timeout (ms)
-#define HANDSHAKE_RETRY_DELAY  1000   // Retry delay (ms)
+#define WIFI_CONNECT_TIMEOUT   5000  // WiFi timeout (ms)
+#define HANDSHAKE_RETRY_DELAY  3000   // Retry delay (ms)
 #define MAX_RETRIES            2      // Max retry count
 
 #ifdef ESP8266
