@@ -1,8 +1,10 @@
 #pragma once
 
-// WiFi credentials and Tapo settings are injected via build_flags from
-// environment variables (WIFI_SSID, WIFI_PASSWORD, TAPO_IP, TAPO_EMAIL, TAPO_PASSWORD).
-// See platformio.ini and README for setup instructions.
+// WiFi credentials and Tapo settings (WIFI_SSID, WIFI_PASSWORD, TAPO_IP,
+// TAPO_EMAIL, TAPO_PASSWORD) are injected at build time by
+// scripts/load_env.py, which reads the project-root .env file.
+// Copy .env.example to .env and fill it in. Real environment variables
+// take precedence over .env.
 
 // Timing
 #define COUNTDOWN_SECONDS      180    // Auto-off countdown (seconds)
